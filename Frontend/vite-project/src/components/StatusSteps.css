@@ -1,0 +1,103 @@
+.status-steps {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 4px;
+}
+
+.status-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  position: relative;
+}
+
+.status-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: calc(50% + 16px);
+  width: calc(100% - 32px);
+  height: 2px;
+  background: rgba(18, 24, 22, 0.1);
+  z-index: 0;
+  transition: background 0.35s var(--ease-out);
+}
+
+.status-step--done:not(:last-child)::after {
+  background: var(--signal);
+}
+
+.status-step-dot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(18, 24, 22, 0.14);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text-muted);
+  transition: border-color 0.3s, background 0.3s, color 0.3s, box-shadow 0.3s;
+}
+
+.status-step-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: color 0.3s;
+}
+
+.status-step--done .status-step-dot {
+  border-color: var(--moss);
+  background: var(--moss);
+  color: #fff;
+}
+
+.status-step--done .status-step-label {
+  color: var(--text-secondary);
+}
+
+.status-step--active .status-step-dot {
+  border-color: var(--moss-deep);
+  background: var(--moss-deep);
+  color: #fff;
+  animation: step-pulse 1.6s var(--ease-out) infinite;
+}
+
+.status-step--active .status-step-label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.status-step--failed .status-step-dot {
+  border-color: #b33a2b;
+  background: #b33a2b;
+  color: #fff;
+}
+
+.status-step--failed .status-step-label {
+  color: #8a2e22;
+}
+
+@keyframes step-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(31, 107, 74, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(31, 107, 74, 0);
+  }
+}
+
+@media (max-width: 420px) {
+  .status-step-label {
+    font-size: 0.65rem;
+  }
+}
