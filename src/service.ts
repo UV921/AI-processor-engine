@@ -1,5 +1,5 @@
-import { db } from "./index";
-import { resarchTable } from "./db/schema";
+import { db } from "./index.js";
+import { resarchTable } from "./db/schema.js";
 import { eq } from "drizzle-orm";
 
 export const createResarchRecordInDB = async (url: string) => {

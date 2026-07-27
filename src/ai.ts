@@ -1,7 +1,7 @@
 import "dotenv/config"
 import { GoogleGenAI } from "@google/genai"
 import {z} from "zod"
-import { promptB } from "./prompt"
+import { promptB } from "./prompt.js"
 
 export const resarchSchema=z.object({
     title:z.string(),

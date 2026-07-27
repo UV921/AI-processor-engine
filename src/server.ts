@@ -1,10 +1,10 @@
 import  express from "express";
 import crypto from "node:crypto";
-import { resarchQueue } from "./queue";
-import {db} from "./index"
-import { resarchTable } from "./db/schema";
-import { createResarchRecordInDB,getResarch } from "./service";
-import { normalizeUrl } from "./utility";
+import { resarchQueue } from "./queue.js";
+import {db} from "./index.js"
+import { resarchTable } from "./db/schema.js";
+import { createResarchRecordInDB,getResarch } from "./service.js";
+import { normalizeUrl } from "./utility.js";
 import { and, eq, or } from "drizzle-orm";
 
 const app=express()

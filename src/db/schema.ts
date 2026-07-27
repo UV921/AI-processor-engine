@@ -7,6 +7,7 @@ export const resarchTable=pgTable("resarch_table",{
     id:uuid("id").primaryKey().defaultRandom(),
     url:text("url").notNull(),
     status:text("status").notNull().default("pending"),
+    sourceText:text("source_text"),
     
     title:text("title"),
     summary:text("summary"),    

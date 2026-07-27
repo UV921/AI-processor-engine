@@ -1,5 +1,12 @@
 
 import { string } from "zod"
+import { verificationInput } from "./evalutaion-engine/claim-verify.js";
+
+
+type ClaimPromptInput = {
+  summary: string | null;
+  keyConcepts: string[] | null;
+};
 
 export function promptA(text:string){
   return  `Analyze the following technical webpage content.
@@ -64,4 +71,56 @@ CONTENT:
 ${text}
 `}
 
-console.log(promptB("hi i am here"))
+export function promptClaim(text:ClaimPromptInput){
+  return `Extract ALL factual claims from the input.
+
+Rules:
+- Each claim must contain exactly one atomic fact.
+- Do not combine multiple facts into one claim.
+- Do not summarize or generalize the input.
+- Do not rewrite a specific claim into a broader claim.
+- Do not infer anything that is only implied.
+- Do not add new information.
+- Preserve the original meaning as closely as possible.
+- Extract claims from both the summary and key concepts.
+- If one sentence contains multiple facts, split them into separate claims.
+- Do not judge whether the claims are true.
+
+Example:
+Input:
+" BullMQ uses Redis and supports retries."
+
+Correct:
+[
+  "BullMQ uses Redis.",
+  "BullMQ supports retries."
+]
+
+Incorrect:
+[
+  "BullMQ is a powerful background processing system."
+]
+summary:${text.summary}
+keyConcepts:${text.keyConcepts}
+`
+}
+
+export function promptVerification(text:verificationInput){
+  return`You are given two inputs:
+1. Source text
+2. Claims
+
+Your task is to verify each claim only on the basis of the source text.
+Rules:
+- Evaluate every claim independently.
+- Mark supported=true only when the source text provides evidence for the claim.
+- Do not use outside knowledge.
+- Do not assume or infer facts that are not supported by the source.
+- If supported, provide the relevant evidence from the source.
+- If unsupported, set evidence to null.
+- Give a short reason explaining the decision.
+claim:${text.claims}
+sourceText:${text.sourceText}
+`
+
+}

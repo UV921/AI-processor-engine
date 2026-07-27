@@ -9,3 +9,9 @@ export function normalizeUrl(url: string) {
 
     return parsedUrl.toString();
 }
+
+export function calculateGroundedness(claims,verifiedclaim){
+    //total claim 
+    clamims.map()
+    
+}

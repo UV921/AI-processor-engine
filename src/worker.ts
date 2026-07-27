@@ -1,10 +1,11 @@
 import { Worker } from "bullmq";
 import * as cheerio from "cheerio"
-import { analyzeResarch } from "./ai";
-import { db } from "./index";
-import { resarchTable } from "./db/schema";
+import { analyzeResarch } from "./ai.js";
+import { db } from "./index.js";
+import { resarchTable } from "./db/schema.js";
 import { eq } from "drizzle-orm";
-import { json } from "zod";
+import { evaluationQueue } from "./evalutaion-engine/evalutation_queue.js";
+
 
 const worker =new Worker("resarch-processing",
     async (job)=>{
@@ -46,6 +47,7 @@ const worker =new Worker("resarch-processing",
   await db.update(resarchTable).set({
     title:result.title,
     summary:result.summary,
+    sourceText:text,
     keyConcepts:result.keyConcepts,
     usefulFor:result.usefulFor,
     errorMessage:null,
@@ -56,6 +58,12 @@ const worker =new Worker("resarch-processing",
 
   console.log("AI STRUCTURED RESULT:");
   console.dir(result,{depth:null});
+
+  evaluationQueue.add("result-processing",{
+    resarchId
+
+  })
+
     },
     {
         connection:{

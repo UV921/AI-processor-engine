@@ -12,6 +12,12 @@ dist-ssr/
 build/
 *.tsbuildinfo
 
+# Accidental tsc emit next to TypeScript sources
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+src/**/*.d.ts.map
+
 # Logs
 logs/
 *.log

@@ -1,0 +1,1 @@
+ALTER TABLE "resarch_table" ADD COLUMN "source_text" text;
