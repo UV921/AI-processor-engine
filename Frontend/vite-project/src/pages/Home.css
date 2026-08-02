@@ -28,7 +28,7 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 640px;
+  max-width: 920px;
   text-align: center;
   animation: rise-in 0.7s var(--ease-out) both;
 }
@@ -162,6 +162,14 @@
 .status-panel .status-steps {
   margin-top: 36px;
   width: 100%;
+}
+
+.status-panel .live-pipeline {
+  width: 100%;
+}
+
+.status-error + .live-pipeline {
+  margin-top: 24px;
 }
 
 .status-error {

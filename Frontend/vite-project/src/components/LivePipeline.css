@@ -1,0 +1,210 @@
+.live-pipeline {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 22px 24px 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-soft);
+  text-align: left;
+}
+
+.live-pipeline-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.live-pipeline-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--moss);
+}
+
+.live-pipeline-url {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Vertical rail sits behind the markers and fills as stages complete. */
+.live-pipeline-rail {
+  position: absolute;
+  left: 37px;
+  top: 68px;
+  bottom: 46px;
+  width: 2px;
+  border-radius: 999px;
+  background: rgba(18, 24, 22, 0.09);
+  overflow: hidden;
+}
+
+.live-pipeline-rail-fill {
+  display: block;
+  width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--moss), var(--signal));
+  transition: height 0.6s var(--ease-out);
+}
+
+.live-pipeline-rail-fill--failed {
+  background: linear-gradient(180deg, var(--moss), #b33a2b);
+}
+
+.live-pipeline-steps {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.live-step {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  transition: opacity 0.4s var(--ease-out);
+}
+
+.live-step-marker {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(18, 24, 22, 0.14);
+  background: #fff;
+  color: var(--text-muted);
+  transition: background 0.35s, border-color 0.35s, color 0.35s, box-shadow 0.35s;
+}
+
+.live-step-body {
+  min-width: 0;
+}
+
+.live-step-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color 0.35s;
+}
+
+.live-step-detail {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+.live-step-elapsed {
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.live-step-spinner {
+  color: var(--moss);
+}
+
+.live-step--upcoming {
+  opacity: 0.45;
+}
+
+.live-step--done .live-step-marker {
+  border-color: var(--moss);
+  background: var(--moss);
+  color: #fff;
+}
+
+.live-step--done .live-step-label {
+  color: var(--text-secondary);
+}
+
+.live-step--active .live-step-marker {
+  border-color: var(--moss-deep);
+  background: var(--moss-deep);
+  color: #fff;
+  box-shadow: 0 0 0 0 rgba(47, 158, 107, 0.45);
+  animation: live-marker-pulse 1.6s var(--ease-out) infinite;
+}
+
+.live-step--active .live-step-label {
+  color: var(--ink);
+}
+
+.live-step--active .live-step-detail {
+  color: var(--ink-soft);
+  opacity: 1;
+  animation: live-detail-in 0.35s var(--ease-out) both;
+}
+
+.live-step--failed .live-step-marker {
+  border-color: #b33a2b;
+  background: #b33a2b;
+  color: #fff;
+}
+
+.live-step--failed .live-step-label {
+  color: #8a2e22;
+}
+
+@keyframes live-marker-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(47, 158, 107, 0.45); }
+  70% { box-shadow: 0 0 0 9px rgba(47, 158, 107, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(47, 158, 107, 0); }
+}
+
+@keyframes live-detail-in {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-step--active .live-step-marker {
+    animation: none;
+  }
+  .live-pipeline-rail-fill {
+    transition: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .live-pipeline {
+    padding: 18px 16px;
+  }
+
+  .live-pipeline-rail {
+    left: 29px;
+  }
+
+  .live-pipeline-head {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .live-pipeline-url {
+    max-width: 100%;
+  }
+}

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { fetchResearch, submitUrl } from '../api'
-import StatusSteps from '../components/StatusSteps'
-import type { Research, ResearchStatus } from '../types'
+import GroundednessCard from '../components/GroundednessCard'
+import LivePipeline from '../components/LivePipeline'
+import PipelineDemo from '../components/PipelineDemo'
+import type { Research, ResearchStage, ResearchStatus } from '../types'
 import {
   IconAlert,
   IconCheck,
@@ -14,15 +16,11 @@ import {
 } from '../Icons'
 import './Home.css'
 
-const POLL_MS = 2000
+// Stages change faster than the research status, so poll often enough that
+// every step of the pipeline is actually visible.
+const POLL_MS = 900
 
 type Phase = 'idle' | 'submitting' | ResearchStatus
-
-const STATUS_TEXT: Record<string, string> = {
-  submitting: 'Sending your URL…',
-  pending: 'Waiting in queue…',
-  processing: 'Reading the page and analyzing…',
-}
 
 export default function Home() {
   const [url, setUrl] = useState('')
@@ -32,10 +30,14 @@ export default function Home() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const lastStatusRef = useRef<ResearchStatus | null>(null)
 
-  const loading = phase !== 'idle' && phase !== 'completed' && phase !== 'failed'
-  const isFailed = phase === 'failed' || research?.status === 'failed'
-  const isDone = research?.status === 'completed'
-  const isWorking = phase !== 'idle' && !isDone && !isFailed
+  const stage: ResearchStage = research?.stage ?? 'queued'
+  const isFailed = phase === 'failed' || research?.status === 'failed' || stage === 'failed'
+  const hasResult = research?.status === 'completed'
+  // The evaluation worker keeps running after status flips to "completed",
+  // so the pipeline stays on screen until the score lands.
+  const isSettled = stage === 'scored' || isFailed
+  const isWorking = phase !== 'idle' && !isSettled
+  const loading = phase !== 'idle' && !isSettled
 
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current) }, [])
 
@@ -60,7 +62,9 @@ export default function Home() {
       try {
         const data = await fetchResearch(id)
         applyUpdate(data)
-        if (data.status === 'completed' || data.status === 'failed') stopPolling()
+        if (data.status === 'failed' || data.stage === 'failed' || data.stage === 'scored') {
+          stopPolling()
+        }
       } catch {
         stopPolling()
         setPhase('failed')
@@ -85,7 +89,9 @@ export default function Home() {
       const data = await fetchResearch(resarchId)
       applyUpdate(data)
       if (status !== data.status) setPhase(data.status)
-      if (data.status === 'pending' || data.status === 'processing') startPolling(resarchId)
+      if (data.stage !== 'scored' && data.stage !== 'failed' && data.status !== 'failed') {
+        startPolling(resarchId)
+      }
     } catch (err) {
       setPhase('failed')
       setError(err instanceof Error ? err.message : 'Failed to submit URL')
@@ -122,7 +128,7 @@ export default function Home() {
 
   return (
     <div className="shell">
-      <main className={`content${isDone ? ' content--result' : ''}`}>
+      <main className={`content${hasResult ? ' content--result' : ''}`}>
         {phase === 'idle' && (
           <div className="welcome">
             <p className="brand">
@@ -138,6 +144,7 @@ export default function Home() {
             </p>
             {searchBar}
             <p className="welcome-hint">Works with public web pages and articles.</p>
+            <PipelineDemo />
           </div>
         )}
 
@@ -152,12 +159,7 @@ export default function Home() {
 
         {isWorking && (
           <div className="status-panel reveal">
-            <div className="status-orb" aria-hidden="true">
-              <IconLoader className="spin" size={28} />
-            </div>
-            <p className="status-copy">{STATUS_TEXT[phase] ?? 'Working…'}</p>
-            {research?.url && <span className="status-url">{research.url}</span>}
-            <StatusSteps phase={phase === 'submitting' ? 'submitting' : research?.status ?? 'pending'} />
+            <LivePipeline stage={stage} url={research?.url ?? url} />
           </div>
         )}
 
@@ -167,14 +169,14 @@ export default function Home() {
               <IconAlert size={18} />
               <p>{error ?? research?.errorMessage}</p>
             </div>
-            {isFailed && <StatusSteps phase="processing" failed />}
+            {research && <LivePipeline stage={stage} url={research.url} failed />}
             <button type="button" className="ghost-btn" onClick={resetToIdle}>
               Try another URL
             </button>
           </div>
         )}
 
-        {isDone && research && (
+        {hasResult && research && (
           <article className="research reveal">
             <header className="research-head">
               <p className="research-ready">
@@ -213,6 +215,13 @@ export default function Home() {
                   ))}
                 </ul>
               </section>
+            )}
+
+            {typeof research.groundedness === 'number' && research.claims && (
+              <GroundednessCard
+                groundedness={research.groundedness}
+                claims={research.claims}
+              />
             )}
           </article>
         )}

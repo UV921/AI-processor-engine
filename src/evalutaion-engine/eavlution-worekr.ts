@@ -17,7 +17,11 @@ const evaluationWorker = new Worker(
     if (!result || result.length === 0) {
       throw new Error("there is no record exist for this resarch id ");
     }
-    const research = result[0];
+
+    await db
+      .update(resarchTable)
+      .set({ stage: "extracting-claims" })
+      .where(eq(resarchTable.id, resarchId));
 
     const extractedClaims = await claimExtraction({
       summary: result[0].summary,
@@ -26,6 +30,11 @@ const evaluationWorker = new Worker(
     console.log(extractedClaims);
 
     extractedClaims.claims.push("Mcaly guarantees zero email loss.");
+
+    await db
+      .update(resarchTable)
+      .set({ stage: "verifying-claims" })
+      .where(eq(resarchTable.id, resarchId));
 
     const verifiedClaims = await verifyClaims({
       claims: extractedClaims.claims,
@@ -42,6 +51,15 @@ const evaluationWorker = new Worker(
     const supportedClaim = totalClaim - falseClaim.length;
     const groundedness = supportedClaim / totalClaim;
     console.log(groundedness);
+
+    await db
+      .update(resarchTable)
+      .set({
+        claims: verifiedClaims.results,
+        groundedness,
+        stage: "scored",
+      })
+      .where(eq(resarchTable.id, resarchId));
   },
   {
     connection: {
@@ -51,3 +69,16 @@ const evaluationWorker = new Worker(
   },
 );
 console.log("evaluation started");
+
+evaluationWorker.on("failed", async (job, error) => {
+  console.log("Evaluation failed:", job?.id, error);
+  const resarchId = job?.data?.resarchId;
+  if (!resarchId) return;
+
+  // The research itself succeeded, so only the stage regresses — the summary
+  // stays viewable without a groundedness score.
+  await db
+    .update(resarchTable)
+    .set({ stage: "failed", errorMessage: error.message })
+    .where(eq(resarchTable.id, resarchId));
+});

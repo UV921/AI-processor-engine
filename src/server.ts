@@ -11,8 +11,15 @@ const app=express()
 
 app.use(express.json());
 
+app.get("/health",(_req,res)=>{
+    res.status(200).json({ok:true})
+})
+
 app.post("/resarch",async (req,res)=>{
     try{const {url}=req.body;
+    if(typeof url!=="string" || url.trim()===""){
+        return res.status(400).json({message:"a url is required"})
+    }
     const normalizedUrl=normalizeUrl(url)
     const existingResearch = await db
     .select()
@@ -72,6 +79,17 @@ app.get("/resarch/:id",async (req,res)=>{
 
 })
 
-app.listen(3000,()=>{
-    console.log("server runing ")
+const PORT=Number(process.env.PORT ?? 3000)
+
+const server=app.listen(PORT,"127.0.0.1",()=>{
+    console.log(`server running on http://127.0.0.1:${PORT}`)
+})
+
+server.on("error",(err:NodeJS.ErrnoException)=>{
+    if(err.code==="EADDRINUSE"){
+        console.error(`port ${PORT} is already used by another app. Free it or start with PORT=3001 npx tsx src/server.ts`)
+    }else{
+        console.error(err)
+    }
+    process.exit(1)
 })
